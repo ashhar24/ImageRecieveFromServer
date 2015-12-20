@@ -1,46 +1,49 @@
 package com.defoliate.imagerecievefromserver;
 
-import android.app.Activity;
-import android.content.Context;
+import android.support.v7.widget.CardView;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
-import android.widget.GridView;
 import android.widget.TextView;
 
 import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.NetworkImageView;
 
-import java.util.ArrayList;
 import java.util.List;
 
-/**
+/*
  * Created by defoliate on 29-11-2015.
  */
-public class CustomImageAdapter extends BaseAdapter
+
+public class CustomImageAdapter extends RecyclerView.Adapter<CustomImageAdapter.PersonViewHolder>
 {
     ImageLoader imageLoader = MyApplication.getInstance().getImageLoader();
-    private Activity activity;
-    private LayoutInflater inflater;
     private List<ImageClass> imageItems;
 
-    public CustomImageAdapter (Activity activity, List<ImageClass> imageItems)
+    public CustomImageAdapter (List<ImageClass> imageItems)
     {
-        this.activity = activity;
         this.imageItems = imageItems;
     }
 
     @Override
-    public int getCount ()
+    public PersonViewHolder onCreateViewHolder (ViewGroup parent, int viewType)
     {
-        return imageItems.size();
+        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_row, parent, false);
+        return new PersonViewHolder(v);
     }
 
     @Override
-    public Object getItem (int position)
+    public void onBindViewHolder (PersonViewHolder holder, int position)
     {
-        return imageItems.get(position);
+        // getting movie data for the row
+        if(imageLoader == null)
+            imageLoader = MyApplication.getInstance().getImageLoader();
+        ImageClass m = imageItems.get(position);
+
+        // thumbnail image
+        holder.thumbNail.setImageUrl(m.getThumbnailUrl(), imageLoader);
+        holder.personAge.setText(m.getTitle());
     }
 
     @Override
@@ -49,25 +52,25 @@ public class CustomImageAdapter extends BaseAdapter
         return position;
     }
 
-    public View getView (int position, View convertView, ViewGroup parent)
+    @Override
+    public int getItemCount ()
     {
-        if(inflater == null)
-            inflater = (LayoutInflater) activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        if(convertView == null)
-            convertView = inflater.inflate(R.layout.list_row, null);
+        return imageItems.size();
+    }
 
-        if(imageLoader == null)
-            imageLoader = MyApplication.getInstance().getImageLoader();
-        NetworkImageView thumbNail = (NetworkImageView) convertView.findViewById(R.id.thumbnail);
-        TextView title = (TextView) convertView.findViewById(R.id.title);
+    public static class PersonViewHolder extends RecyclerView.ViewHolder
+    {
+        CardView cv;
+        TextView personName, personAge;
+        NetworkImageView thumbNail;
 
-        // getting movie data for the row
-        ImageClass m = imageItems.get(position);
-
-        // thumbnail image
-        thumbNail.setImageUrl(m.getThumbnailUrl(), imageLoader);
-        title.setText(m.getTitle());
-
-        return convertView;
+        PersonViewHolder (View itemView)
+        {
+            super(itemView);
+            cv = (CardView) itemView.findViewById(R.id.mcardview);
+            personName = (TextView) itemView.findViewById(R.id.person_name);
+            personAge = (TextView) itemView.findViewById(R.id.person_age);
+            thumbNail = (NetworkImageView) itemView.findViewById(R.id.thumbnail);
+        }
     }
 }

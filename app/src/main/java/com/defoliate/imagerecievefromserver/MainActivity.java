@@ -2,8 +2,11 @@ package com.defoliate.imagerecievefromserver;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
-import android.widget.ListView;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -20,15 +23,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class MainActivity extends AppCompatActivity
+public class MainActivity extends AppCompatActivity implements View.OnClickListener
 {
     private static String TAG = MainActivity.class.getSimpleName();
-    public List<String> friendlist = new ArrayList<>();
-    //public List<String> imagelinks = new ArrayList<>();
-    private List<ImageClass> imageList = new ArrayList<ImageClass>();
+    private List<ImageClass> imageList = new ArrayList<>();
 
-    private ListView listView;
+    private RecyclerView recyclerView;
     private CustomImageAdapter adapter;
+
+    private Button bfriendlist, bpendingfriendlist;
 
     @Override
     protected void onCreate (Bundle savedInstanceState)
@@ -36,15 +39,39 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        listView = (ListView) findViewById(R.id.list);
-        adapter = new CustomImageAdapter(this, imageList);
-        listView.setAdapter(adapter);
+        adapter = new CustomImageAdapter(imageList);
 
-        requestfriendlist("Naruto");
+        recyclerView = (RecyclerView) findViewById(R.id.rv);
+        recyclerView.setHasFixedSize(true);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.setAdapter(adapter);
+
+        bfriendlist = (Button) findViewById(R.id.bfriendlist);
+        bpendingfriendlist = (Button) findViewById(R.id.bpendingfriendlist);
+
+        bfriendlist.setOnClickListener(this);
+        bpendingfriendlist.setOnClickListener(this);
+    }
+
+    @Override
+    public void onClick (View v)
+    {
+        switch(v.getId())
+        {
+            case R.id.bfriendlist:
+                requestfriendlist("Naruto");
+                break;
+
+            case R.id.bpendingfriendlist:
+                requestpendinglist("Naruto");
+                break;
+        }
     }
 
     private void requestfriendlist (String profilename)
     {
+        imageList.clear();
+        adapter.notifyDataSetChanged();
         String uri = String.format(Config.URL_REQUEST_FRIENDS + "?current_user=%1$s", profilename);
         Log.d(TAG + "uri", uri);
         StringRequest strReq = new StringRequest(
@@ -58,17 +85,19 @@ public class MainActivity extends AppCompatActivity
                         try
                         {
                             JSONObject responseObj = new JSONObject(response);
-                            Log.d(TAG+"friends", response);
+                            Log.d(TAG + "friends", response);
                             JSONArray jResult = responseObj.getJSONArray("req_users");
-                            Toast.makeText(MainActivity.this, jResult.toString(), Toast.LENGTH_SHORT).show();
+                            ((TextView) findViewById(R.id.tvprofilejson)).setText(jResult.toString());
                             for(int i = 0; i < jResult.length(); i++)
                             {
                                 JSONObject jresponse = jResult.getJSONObject(i);
-                                String profile = jresponse.getString("userid");
-                                friendlist.add(profile);
+                                Toast.makeText(MainActivity.this, jresponse.toString(), Toast.LENGTH_SHORT).show();
+                                ImageClass img = new ImageClass();
+                                img.setThumbnailUrl(jresponse.getString("url"));
+                                img.setTitle(jresponse.getString("uid"));
+                                imageList.add(img);
+                                adapter.notifyDataSetChanged();
                             }
-                            for(int i=0 ;i<friendlist.size();i++)
-                                requestimagelink(friendlist.get(i));
                         }
                         catch(JSONException e)
                         {
@@ -90,34 +119,35 @@ public class MainActivity extends AppCompatActivity
         MyApplication.getInstance().addToRequestQueue(strReq);
     }
 
-    private void requestimagelink (final String profilename)
+    private void requestpendinglist (String profilename)
     {
-        String uri = String.format(Config.URL_REQUEST_IMAGE + "?userid=%1$s", profilename);
-        Toast.makeText(MainActivity.this, uri, Toast.LENGTH_SHORT).show();
-        Log.d(TAG, "uri" + uri);
+        imageList.clear();
+        adapter.notifyDataSetChanged();
+        String uri = String.format(Config.URL_REQUEST_PENDING_FRIENDS + "?current_user=%1$s", profilename);
+        Log.d(TAG + "uri", uri);
         StringRequest strReq = new StringRequest(
                 Request.Method.GET,
                 uri,
                 new Response.Listener<String>()
                 {
-                    //response from the server
                     @Override
                     public void onResponse (String response)
                     {
                         try
                         {
                             JSONObject responseObj = new JSONObject(response);
-                            ((TextView) findViewById(R.id.tvprofilejson)).setText(response);
-                            Log.d(TAG, response);
-                            JSONArray jResult = responseObj.getJSONArray("photos");
+                            Log.d(TAG + "friends", response);
+                            JSONArray jResult = responseObj.getJSONArray("req_users");
+                            ((TextView) findViewById(R.id.tvprofilejson)).setText(jResult.toString());
                             for(int i = 0; i < jResult.length(); i++)
                             {
                                 JSONObject jresponse = jResult.getJSONObject(i);
+                                Toast.makeText(MainActivity.this, jresponse.toString(), Toast.LENGTH_SHORT).show();
                                 ImageClass img = new ImageClass();
-                                img.setThumbnailUrl(jresponse.getString("name"));
-                                img.setTitle(profilename);
+                                img.setThumbnailUrl(jresponse.getString("url"));
+                                img.setTitle(jresponse.getString("uid"));
                                 imageList.add(img);
-                                //imagelinks.add(jresponse.getString("name"));
+                                adapter.notifyDataSetChanged();
                             }
                         }
                         catch(JSONException e)
@@ -137,8 +167,6 @@ public class MainActivity extends AppCompatActivity
                     }
                 }
         );
-        // Adding request to request queue
         MyApplication.getInstance().addToRequestQueue(strReq);
     }
 }
-

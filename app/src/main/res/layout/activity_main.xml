@@ -16,20 +16,35 @@
         android:layout_height="wrap_content"
         android:text="Hello World!"/>
 
-    <ListView
-        android:id="@+id/list"
-        android:layout_width="fill_parent"
+    <Button
+        android:id="@+id/bfriendlist"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
         android:layout_below="@+id/tvprofilejson"
-        android:divider="@color/list_divider"
-        android:dividerHeight="1dp"
-        android:listSelector="@drawable/list_row_selector"/>
+        android:layout_marginLeft="30dp"
+        android:layout_marginStart="30dp"
+        android:text="Friend List"/>
 
+    <Button
+        android:id="@+id/bpendingfriendlist"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignEnd="@+id/rv"
+        android:layout_alignRight="@+id/rv"
+        android:layout_alignTop="@+id/bfriendlist"
+        android:layout_marginEnd="35dp"
+        android:layout_marginRight="35dp"
+        android:text="Pending List"/>
 
-    <!--<com.android.volley.toolbox.NetworkImageView
-        android:id="@+id/networkImageView"
-        android:layout_width="150dp"
-        android:layout_height="170dp"
-        android:layout_centerHorizontal="true"/>-->
+    <android.support.v7.widget.RecyclerView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/rv"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_below="@id/bpendingfriendlist"
+        />
 
 </RelativeLayout>

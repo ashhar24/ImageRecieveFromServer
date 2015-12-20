@@ -1,6 +1,6 @@
 package com.defoliate.imagerecievefromserver;
 
-/**
+/*
  * Created by defoliate on 29-11-2015.
  */
 public class ImageClass
